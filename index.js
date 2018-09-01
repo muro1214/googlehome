@@ -7,8 +7,8 @@ var wol = require("./wake_on_lan");
 require("dotenv").config();
 
 // IR lists
-var bedroomLightList = require("./ir/light_bedroom");
-var livingLightList = require("./ir/light_living");
+// var bedroomLightList = require("./ir/light_bedroom");
+var lightList = require("./ir/light_living");
 var tvList = require("./ir/tv");
 var recorderList = require("./ir/recorder");
 var airconList = require("./ir/aircon");
@@ -32,6 +32,7 @@ const timer = setInterval(function() {
 
 // eRemote mini IR send
 const irSend = (irData) => {
+  console.log("send IR data");
   const hexDataBuffer = new Buffer(irData, "hex");
   eRemote.sendData(hexDataBuffer);
 }
@@ -50,7 +51,7 @@ const getJsonData = (value, json) => {
 const getNowPowerStatus = (target) => {
   return request(
     "GET",
-    `${process.env.NODE_FIREBASE_DB_HOST}/${target}/power.json`
+    `${process.env.NODE_FIREBASE_DB_HOST}/${target}/power.json?auth=${process.env.NODE_FIREBASE_DB_AUTH}`
   ).getBody("utf8").replace(/\"/g, "");
 }
 
@@ -101,8 +102,8 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
       return "Wake on LAN";
     },
 
-    // リビングの照明
-    "living_light": () => {
+    // リビングの照明 -> 寝室も同じ信号にした
+    "light": () => {
       var command = getJsonData(values[1], {
         "つけ": "max",
         "オン": "max",
@@ -117,21 +118,21 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
       return command ? () => irSend(livingLightList[command]) : command;
     },
 
-    // ベッドルームの照明
-    "bedroom_light": () => {
-      var command = getJsonData(values[1], {
-        "つけ": "max",
-        "オン": "max",
-        "消し": "off",
-        "けし": "off",
-        "オフ": "off",
-        "シーン": "scene",
-        "夜": "night",
-        "暗く": "night",
-        "default": false
-      })
-      return command ? () => irSend(bedroomLightList[command]) : command;
-    },
+    // // ベッドルームの照明
+    // "bedroom_light": () => {
+    //   var command = getJsonData(values[1], {
+    //     "つけ": "max",
+    //     "オン": "max",
+    //     "消し": "off",
+    //     "けし": "off",
+    //     "オフ": "off",
+    //     "シーン": "scene",
+    //     "夜": "night",
+    //     "暗く": "night",
+    //     "default": false
+    //   })
+    //   return command ? () => irSend(bedroomLightList[command]) : command;
+    // },
 
     // エアコン
     "aircon": () => {
@@ -236,21 +237,17 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
   // コマンド実行
   if(command){
     if(typeof command === "string"){
-      if("OTAKU no KITAKU"){ //リビングの照明とTVをONにする
-        irSend(livingLightList["max"]);
-        izunaUtil.sleep(2);
+      if(command == "OTAKU no KITAKU"){ //リビングの照明とTVをONにする
+        irSend(lightList["max"]);
         if(checkPowerStatus("tv","on")){
           irSend(tvList["power"]);
         }
-      }else if("OTAKU no SHUPPATSU"){ //すべての照明とTVをOFFLINEにする
-        irSend(livingLightList["off"]);
-        izunaUtil.sleep(2);
-        irSend(bedroomLightList["off"]);
-        izunaUtil.sleep(2);
+      }else if(command == "OTAKU no SHUPPATSU"){ //すべての照明とTVをOFFにする
+        irSend(lightList["off"]);
         if(checkPowerStatus("tv", "off")){
           irSend(tvList["power"]);
         }
-      }else if("Wake on LAN"){
+      }else if(command == "Wake on LAN"){
         wol.wakeUp(process.env.NODE_PC_MAC);
       }
     }else if(typeof command === "function"){
