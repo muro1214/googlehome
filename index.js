@@ -2,14 +2,15 @@
 var firebase = require("firebase-admin");
 var request = require("sync-request");
 var broadlink = require("./getDevice");
+var izunaUtil = require("./izuna_util");
 require("dotenv").config();
 
 // IR lists
-var bedroomLightList = require("./light_bedroom");
-var livingLightList = require("./light_living");
-var tvList = require("./tv");
-var recorderList = require("./recorder");
-var airconList = require("./aircon");
+var bedroomLightList = require("./ir/light_bedroom");
+var livingLightList = require("./ir/light_living");
+var tvList = require("./ir/tv");
+var recorderList = require("./ir/recorder");
+var airconList = require("./ir/aircon");
 
 // Initialize Firebase
 var serviceAccount = require("./" + process.env.NODE_FIREBASE_KEY);
@@ -228,12 +229,15 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
     if(typeof command === "string"){
       if("OTAKU no KITAKU"){ //リビングの照明とTVをONにする
         irSend(livingLightList["max"]);
+        izunaUtil.sleep(2);
         if(checkPowerStatus("tv","on")){
           irSend(tvList["power"]);
         }
       }else if("OTAKU no SHUPPATSU"){ //すべての照明とTVをOFFLINEにする
         irSend(livingLightList["off"]);
+        izunaUtil.sleep(2);
         irSend(bedroomLightList["off"]);
+        izunaUtil.sleep(2);
         if(checkPowerStatus("tv", "off")){
           irSend(tvList["power"]);
         }
