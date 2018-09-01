@@ -1,7 +1,9 @@
-exports.sleep = function (sec) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-    }, time * 1000);
-  });
+exports.sleep = function (msec) {
+  const date1 = new Date();
+  while(true){
+    const date2 = new Date();
+    if(date2 - date1 > msec){
+      return;
+    }
+  }
 }
