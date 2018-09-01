@@ -28,9 +28,11 @@ nfc.on("touchstart", (card) => {
     // 在室状況に応じて、操作を変える
     var operation = ""
     if(inRoom == "yes"){ // 在室中なら外出の操作
+      console.log("在室中なので外出の処理を実行します");
       operation = "OTAKU_no_SHUPPATSU";
       inRoom = "no";
-    }else{ // 外出中なら帰宅の操作
+    }else if(inRoom == "no"){ // 外出中なら帰宅の操作
+      console.log("外出から戻ったので帰宅の処理を実行します");
       operation = "OTAKU_no_KITAKU";
       inRoom = "yes";
     }
