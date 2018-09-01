@@ -3,6 +3,7 @@ var firebase = require("firebase-admin");
 var request = require("sync-request");
 var broadlink = require("./getDevice");
 var izunaUtil = require("./izuna_util");
+var wol = require("./wake_on_lan");
 require("dotenv").config();
 
 // IR lists
@@ -90,6 +91,11 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
     // オタクの出発
     "OTAKU_no_SHUPPATSU": () => {
       return "OTAKU no SHUPPATSU";
+    },
+
+    // PC立ち上げ
+    "Wake_on_LAN": () => {
+      return "Wake on LAN";
     },
 
     // リビングの照明
@@ -241,6 +247,8 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
         if(checkPowerStatus("tv", "off")){
           irSend(tvList["power"]);
         }
+      }else if("Wake on LAN"){
+        wol.wakeUp(process.env.NODE_PC_MAC);
       }
     }else if(typeof command === "function"){
       command();
