@@ -48,7 +48,10 @@ const getJsonData = (value, json) => {
 
 // 現在のPower状態を取得
 const getNowPowerStatus = (target) => {
-  return request("GET", `${process.env.NODE_FIREBASE_DB_HOST}/${target}/power.json`).getBody("utf8").replace(/\"/g, "");
+  return request(
+    "GET",
+    `${process.env.NODE_FIREBASE_DB_HOST}/${target}/power.json`
+  ).getBody("utf8").replace(/\"/g, "");
 }
 
 // PowerのIRを送る必要があるか調べる
