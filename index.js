@@ -4,6 +4,7 @@ var request = require("sync-request");
 var broadlink = require("./getDevice");
 var izunaUtil = require("./izuna_util");
 var wol = require("./wake_on_lan");
+var playAudio = require("./playAudio");
 require("dotenv").config();
 
 // IR lists
@@ -115,7 +116,7 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
         "暗く": "night",
         "default": false
       })
-      return command ? () => irSend(livingLightList[command]) : command;
+      return command ? () => irSend(lightList[command]) : command;
     },
 
     // // ベッドルームの照明
@@ -238,6 +239,8 @@ database.ref("/googlehome").on("value", function(changedSnapshot) {
   if(command){
     if(typeof command === "string"){
       if(command == "OTAKU no KITAKU"){ //リビングの照明とTVをONにする
+        wol.wakeUp(process.env.NODE_PC_MAC);
+        // playAudio.playMp3("sagiri.mp3");
         irSend(lightList["max"]);
         if(checkPowerStatus("tv","on")){
           irSend(tvList["power"]);
